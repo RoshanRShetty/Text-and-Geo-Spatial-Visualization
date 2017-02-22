@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+path {
+  stroke: white;
+  stroke-width: 0.25px;
+  fill: grey;
+}
+</style>
+<body>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script>
+
+
+//Test variables
+
+var allData;
+var width = 1960,
+    height = 1500;
+
+var projection = d3.geo.mercator()
+    .center([10, 10])
+    .scale(150);
+    //.rotate([-180,0]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var path = d3.geo.path()
+    .projection(projection);
+var cities = new Map();
+var g = svg.append("g");
+	
+
+// load and display the World
+d3.json("worldcoordinates.json", function(error, topology) {
+
+	
+	d3.csv("allLocations.csv", function(error, item) {
+		//allData = data;
+		//data.forEach(function(item) {
+				cities[item]= {"Location":item.Word,"Value":item.Total};
+		       // });
+		
+		g.selectAll("circle")
+		   .data(cities)
+		   .enter()
+		   .append("a")
+		   .append("circle")	
+		   .attr("r", 5)
+		   .style("fill", "red");
+	});
+	
+    g.selectAll("path")      
+	  //.data(topojson.object(topology, topology.objects.countries).geometrics)
+	  .data(topojson.feature(topology, topology.objects.countries).features)
+	  .enter()
+      .append("path")
+      .attr("d", path)
+});
+
+</script>
+</body>
+</html>

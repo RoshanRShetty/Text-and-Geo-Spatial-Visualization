@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html>
+<title>Data Visualization</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://www.w3schools.com/lib/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css">
+<style>
+        body {
+            font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+        }
+        .legend {
+            border: 1px solid #555555;
+            border-radius: 5px 5px 5px 5px;
+            font-size: 0.8em;
+            margin: 10px;
+            padding: 8px;
+        }
+        .bld {
+            font-weight: bold;
+        }
+
+
+        #header{
+
+            width: 1300px;
+            height: 75px;
+              margin: auto;
+          /*border: 3px solid #73AD21;*/
+          float: left;
+
+
+        }
+
+        #div1{
+            width: 150px;
+            height: 400px;
+              margin: auto;
+          /*border: 3px solid #73AD21;*/
+          float: left;
+        }
+
+        #wordle_div{
+            width: 1150px;
+            height: 400px;
+              margin: auto;
+          /*border: 3px solid #73AD21;*/
+          float: left;
+        }
+
+        #slider{
+            width: 1150px;
+            height: 35px;
+              margin: auto;
+          /*border: 3px solid #73AD21;*/
+          float: left;
+        }
+
+
+
+        .ticks {
+          font: 10px sans-serif;
+      }
+
+      .track,
+      .track-inset,
+      .track-overlay {
+          stroke-linecap: round;
+      }
+
+      .track {
+        stroke: #000;
+        stroke-opacity: 0.3;
+        stroke-width: 10px;
+      }
+
+      .track-inset {
+        stroke: #ddd;
+        stroke-width: 8px;
+      }
+
+      .track-overlay {
+        pointer-events: stroke;
+        stroke-width: 50px;
+        cursor: crosshair;
+      }
+
+      .handle {
+        fill: #fff;
+        stroke: #000;
+        stroke-opacity: 0.5;
+        stroke-width: 1.25px;
+      }
+
+      body {
+         font: 10px sans-serif;
+      }
+      svg {
+         margin:30px;
+      }
+      .axis path, .axis line {
+         fill: none;
+         stroke: #000;
+         shape-rendering: crispEdges;
+      }
+      .x.axis path {
+         display: none;
+      }
+      .line {
+         fill: none;
+         stroke: steelblue;
+         stroke-width: 1.5px;
+      }
+      .layer {
+         stroke:none;
+      }
+
+    </style>
+
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"> </script>
+    <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+    <script src="d3.layout.cloud.js"></script>
+    <script src="elasticlunr.js"></script>
+
+<body class="w3-white">
+
+<!-- Top container -->
+<div class="w3-container w3-top w3-black w3-large w3-padding" style="z-index:4">
+  <button class="w3-btn w3-hide-large w3-padding-0 w3-hover-text-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
+   <center> <h2><strong><span class="w3-center">Data Visualization</span></strong> </h2></center>
+
+</div>
+
+<!-- Sidenav/menu -->
+<nav class="w3-sidenav w3-collapse w3-light-grey w3-animate-left" style="z-index:3;width:300px;" id="mySidenav"><br>
+  
+  <div class="w3-container">
+  <center><h4>Dashboard</h4></center>
+  </div>
+  <a href="#" class="w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+
+ <center><h5><b><i>Data Set</i> </b></h5></center>
+   <center><table>
+    <tr>
+      <td>
+ <h5> <INPUT TYPE="radio" NAME="radio"  VALUE="1" CHECKED onClick="readHuffington()">Huffington Post </INPUT></h5><br>
+</td>
+<td>
+    <h5><INPUT TYPE="radio" NAME="radio"  VALUE="2"  onClick="readWikiNews()">Wikinews</INPUT></h5><br>
+</td>
+</tr>
+  </table>
+   </center>
+   <br>
+   <br>
+
+ <center> <h5><b><i>Categories</i> </b></h5></center>
+  <center><table>
+    <tr>
+      <td>
+   <INPUT TYPE="radio" class = "cat" NAME="cat"  VALUE="1" CHECKED   onClick="processPerson()">Persons </INPUT><br>
+ </td>
+ </tr>
+  <tr>
+    <td>
+    <INPUT TYPE="radio" class = "cat" NAME="cat"  VALUE="2"       onClick="processLocation()">Location </INPUT><br>
+     </td> </tr><tr> <td>
+    <INPUT TYPE="radio" class = "cat" NAME="cat"  VALUE="3"       onClick="processOrg()">Organization </INPUT><br>
+      </td></tr><tr> <td>
+    <INPUT TYPE="radio" class = "cat" NAME="cat"  VALUE="4"       onClick="processMis()">Misscellaneous </INPUT><br>
+      </td> </tr><tr> <td>
+    <INPUT TYPE="radio" class = "cat" NAME="cat"  VALUE="5"       onClick="processAll()">All Categories </INPUT><br>
+  </td> </tr>
+</table>
+ </center>
+ <br>
+ <br>
+  <center><h5><b><i>Time Range</i></b></h5></center>
+  <center>  <table>
+<tr>
+<td>
+  <INPUT TYPE="radio" NAME="search"   VALUE="1" CHECKED onClick="showSlider()">Slider </INPUT><br>
+</td>
+<td>
+    <INPUT TYPE="radio" NAME="search"  VALUE="2"       onClick="showRange()">Range</INPUT><br>
+</td>
+<td>
+    <INPUT TYPE="radio" NAME="search"   VALUE="3"       onClick="showSearch()">Search Terms</INPUT><br>
+</td>
+</tr>
+<tr>
+
+
+
+</tr> 
+<tr>
+<td> 
+   <p><b><h5><i>Enter Range:</i></h5></b></p>
+</td>
+</tr>
+</table>
+<div class="w3-container" id="textboxes">
+  <table> </center>
+<tr>
+  <td>
+   <input type="text" class = "range" id="startRange" placeholder="MM-YYYY" maxlength="7" size="7"><br> </td>
+   <td>
+   <input type="text" class= "range" id="endRange" placeholder="MM-YYYY" maxlength="7" size="7"><br> </td>
+
+</tr>
+</table>
+<br>
+<center><input class = "range" type="Submit" value="Search Range" onClick="searchRange()"></center>
+</div>
+ <br>
+ <br>
+<h5 class = "search"><i><b> Search for a paticular term: </b></i> </h5>
+ <input class = "search" type="text" id="search" placeholder="enter term"><br> 
+
+ <center><input class = "search" type="Submit" value="Search Term" onClick="search()"></center>
+<br>
+ <center><input type="Submit" value="Show Relationship" onClick="popOut()"></center>
+</nav>
+
+
+<!-- Overlay effect when opening sidenav on small screens -->
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:300px;margin-top:43px;">
+
+  <!-- Header -->
+ <header class="w3-container" style="padding-top:22px">
+    <center><h2><b><i>Project 2</i> </b></h2></center>
+  </header>
+
+  <div id="wordle_div"> 
+
+ <div id="slider"> </div>
+
+ </div>
+<script type="text/javascript">
+
+
+      // Variables for Wordle --------------------------
+      var wordleWidth = 1050;
+      var wordleHeight = 350;
+
+      //initializing a scale to scale the frequencies of the words
+        var wordSizeScale = d3.scale.linear().range([15,90]);
+        wordSizeScale.domain([0,2000]);
+
+        //initializing variable to hold valueof the word selected from the wordle
+        var wordID;
+
+
+            var color1 = d3.scale.linear()
+          .domain([0,1,2,3,4,5,6,10,15,20,100])
+          .range(["#e5ecf6","#ccdaee","#b2c7e5","#99b5dd","#7fa3d5","#6690cc","#4c7ec4","#326bbb","#1959b3","#0047ab"]);
+      var color2 = d3.scale.linear()
+          .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#e8fbe7","#d1f7cf","#baf4b8","#a3f0a0","#8ced89","#75e971","#5ee559","#47e242","#30de2a","#1adb13"]);
+
+      var color3 = d3.scale.linear()
+          .domain([0,1,2,3,4,5,6,10,15,20,100])
+          .range(["#f9e9fb","#f4d3f8","#efbdf5","#eaa7f2","#e592ef","#df7ceb","#da66e8","#d550e5","#d03ae2","#cb25df"]);
+      var color4 = d3.scale.linear()
+          .domain([0,1,2,3,4,5,6,10,15,20,100])
+          .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"])
+
+
+
+
+      var allData = [];
+      var parseData = [];
+
+      var personsInBlog = new Map();  
+      var locationsInBlog = new Map();
+      var orgInBlog = new Map();    
+      var misInBlog = new Map();
+      
+      var persons =[];
+      var top50Persons = [];
+
+      var locations = [];
+      var top50Locations = [];
+
+      var org = [];
+      var top50Org = [];
+
+      var mis = [];
+      var top50Mis = [];
+
+      var toPlotAllwords = [];
+      var top50All = [];
+
+      var personAlreadyPlotted = "NO";
+      var locationAlreadyPlotted = "NO";
+      var orgAlreadyPlotted = "NO";
+      var misAlreadyPlotted = "NO";
+      var allWordsAlreadyPlotted = "NO";
+
+      var svg;
+
+      var allPersons = new Map();
+      var allLocations = new Map();
+      var allOrg = new Map();
+      var allMis = new Map();
+
+      var isBlogGoodForIndexing = "NO";
+
+      //Creating an Index for whole data.
+      var index = elasticlunr();
+
+      //setting fields of the index
+      index.addField('words');
+      index.setRef('id');
+      index.DocumentStore = false;
+
+
+      
+
+      //creating blogId's
+      var blogId;
+
+      //initializing allWordsInABlog
+      var allWordsInABlog;
+
+      //initializing isBlogAlready Processed
+      var blogAlreadyIndexed = [];
+
+      var dataInOneBlog = [];
+
+      var words = "";
+
+
+      var searchList = [];
+
+      var searchWord;
+
+      var inBlogs = [];
+
+      var Threshold;
+
+      var result = [];
+
+      var count;
+
+      var top50 = [];
+
+      var allWords = new Map();
+
+
+      var allWordsInRelationShip = [];
+
+      var words1 = "";
+
+
+      var dateRangeBlogAlreadyIndexed = [];
+
+      var dateRangeWordsInOneBlog;
+
+      var dateRangeIndex;
+
+      var relationShip = [];
+
+      var useForRelationship = new Map();
+
+      var tempArray = [];
+
+      var tempObj = {};
+
+      var testArray = [];
+
+      var alreadySelected;
+
+      var allitems = "NO";
+
+      var newSearchList = [];
+
+      // vairables for relationships.
+
+      var testGraph = {"nodes":[],"links":[]};
+      var isAlreadyLinked = [];
+      var totalLinkValue =0;
+    
+
+
+      // variables to parse date
+
+      parseDate = d3.time.format("%Y-%m-%d").parse;
+
+
+    //variables for slider
+
+      var sliderDate;
+      var parseDate2 = d3.time.format("%b-%Y");
+      var parseDate3 = d3.time.format("%m-%Y");
+      var parseDate4 = d3.time.format("%m-%Y").parse;
+
+
+
+      var personCat = new Map();
+      var locationCat = new Map();
+      var orgCat = new Map();
+      var misCat = new Map();
+
+      var newData = [];
+      var argData = [];
+
+      //showSlider()
+
+      d3.selectAll(".range").style("display","none");
+      d3.selectAll(".search").style("display","none");
+
+      readHuffington();
+
+
+ function readHuffington(){
+      console.log("huffington");
+
+     
+      d3.csv("../Data/allPersons - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allPersons[d.Word] = { "months": parseMonths };
+          personCat[d.Word] = { "months": parseMonths, "source": "person" };
+          
+        })
+      })
+
+      d3.csv("../Data/allLocations - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allLocations[d.Word] = { "months": parseMonths };
+          locationCat[d.Word] = { "months": parseMonths, "source": "location" };
+          
+        })
+      })
+
+      d3.csv("../Data/allOrganization - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allOrg[d.Word] = { "months": parseMonths };
+          orgCat[d.Word] = { "months": parseMonths, "source": "org" };
+          
+        })
+      })
+
+      d3.csv("../Data/allMiss - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allMis[d.Word] = { "months": parseMonths };
+          misCat[d.Word] = { "months": parseMonths, "source": "mis" };
+          
+        })
+      })
+      
+      
+
+      d3.tsv("../Data/huffington.tsv", function(error,data)
+      {
+        if (error) {return error;}
+
+        allData = data;
+        getWordsAccordingToDate("01-2007","02-2007")
+        showSlider();
+        processPerson();
+
+      }); //end of d3.tsv
+
+
+      //Loading the wikinews data file and processing it
+      d3.csv("../Data/allWords - huffington.csv", function(error,data)
+      {
+        allWordData = data
+        if (error) throw error; 
+
+        allWordData.forEach(function(d){
+          word = d.Word;
+          total = d.Total;
+          parseData = d.inBlogs.split("-");
+
+          allWords[word] = {"Word": word, "Total":total, "inBlogs": parseData}          
+        })        
+      }) // end of d3.tsv
+
+    }
+   
+
+   //read wikinews
+   function readWikiNews(){
+
+      console.log("wikinews");
+     
+      d3.csv("allPersons - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allPersons[d.Word] = { "months": parseMonths };
+          personCat[d.Word] = { "months": parseMonths, "source": "person" };
+          
+        })
+      })
+
+      d3.csv("allLocations - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allLocations[d.Word] = { "months": parseMonths };
+          locationCat[d.Word] = { "months": parseMonths, "source": "location" };
+          
+        })
+      })
+
+      d3.csv("allOrganization - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allOrg[d.Word] = { "months": parseMonths };
+          orgCat[d.Word] = { "months": parseMonths, "source": "org" };
+          
+        })
+      })
+
+      d3.csv("allMiss - huffington.csv", function(error,data1){
+
+        if (error) {return error;}        
+
+        data1.forEach(function(d){
+          
+          parseMonths = d.monthValue.split(":");
+          allMis[d.Word] = { "months": parseMonths };
+          misCat[d.Word] = { "months": parseMonths, "source": "mis" };
+          
+        })
+      })
+      
+      
+
+      d3.tsv("huffington.tsv", function(error,data)
+      {
+        if (error) {return error;}
+
+        allData = data;
+        getWordsAccordingToDate("01-2007","02-2007")
+        showSlider();
+        processPerson();
+
+      }); //end of d3.tsv
+
+
+      //Loading the wikinews data file and processing it
+      d3.csv("allWords - huffington.csv", function(error,data)
+      {
+        allWordData = data
+        if (error) throw error; 
+
+        allWordData.forEach(function(d){
+          word = d.Word;
+          total = d.Total;
+          parseData = d.inBlogs.split("-");
+
+          allWords[word] = {"Word": word, "Total":total, "inBlogs": parseData}          
+        })        
+      }) // end of d3.tsv
+
+
+    } 
+
+            //Logic wordle----------------------------
+
+      function getWordsAccordingToDate(theStartDate,theEndDate)
+      {
+
+        
+          // Resetting all the variables 
+
+            personsInBlog = new Map();
+            locationsInBlog = new Map();
+            orgInBlog = new Map();
+            misInBlog = new Map();
+
+            persons.splice(0);
+            locations.splice(0);
+            org.splice(0);
+            mis.splice(0);
+            top50Persons.splice(0);
+            top50Locations.splice(0);
+            top50Org.splice(0);
+            top50Mis.splice(0);
+
+            personAlreadyPlotted = "NO";
+            locationAlreadyPlotted = "NO"
+            orgAlreadyPlotted = "NO";
+            misAlreadyPlotted = "NO";
+
+            //Creating an Index for only date range
+            dateRangeIndex = elasticlunr();
+            //setting fields of the index
+            dateRangeIndex.addField('words');
+            dateRangeIndex.setRef('id');
+            dateRangeIndex.DocumentStore = false;
+
+        allData.forEach(function(d,i){
+
+          d.time = d.time.substring(0,10);
+
+          if (parseDate(d.time) >= parseDate4(theStartDate) && parseDate(d.time) < parseDate4(theEndDate))
+          {
+
+            // To do : need to index the blogs here
+
+            parsePerson = d.person.split("|");
+            processCount(personsInBlog,parsePerson);
+
+            parseLocation = d.location.split("|");
+            processCount(locationsInBlog,parseLocation);
+
+            parseOrg = d.organization.split("|");
+            processCount(orgInBlog,parseOrg);
+
+            parseMis = d.miscellaneous.split("|");
+            processCount(misInBlog,parseMis)
+
+            
+
+            dateRangeWordsInOneBlog = d.person.concat("|").concat(d.location).concat("|").concat(d.organization).concat("|").concat(d.miscellaneous);
+            dateRangeWordsInOneBlog = dateRangeWordsInOneBlog.split(" ").join("__");
+            dateRangeWordsInOneBlog = dateRangeWordsInOneBlog.split("|").join(" ");
+
+            
+            var doc = {
+              "id": i,
+              "words": dateRangeWordsInOneBlog
+            }
+
+            
+
+            dateRangeIndex.addDoc(doc);
+
+
+
+
+
+
+          }
+        })
+
+      }
+
+
+      function processAll()
+      {
+
+        d3.select(".wordcloud").remove();
+
+        allitems = "YES";
+
+        if(personAlreadyPlotted === "NO")
+        {
+          //console.log(persons + "here2")
+          convertMaptoArrayOfObjects(personsInBlog,persons,"person");     
+
+        }
+
+        if (locationAlreadyPlotted === "NO")
+        {
+          convertMaptoArrayOfObjects(locationsInBlog,locations,"location")          
+        }
+
+        if (orgAlreadyPlotted === "NO")
+        {
+          convertMaptoArrayOfObjects(orgInBlog,org,"org")
+        }
+        
+        if(misAlreadyPlotted === "NO")
+        {
+          convertMaptoArrayOfObjects(misInBlog,mis, "mis")
+        }
+
+
+        toPlotAllwords = persons.concat(locations).concat(org).concat(mis);
+
+        toPlotAllwords.sort(function(a,b)
+          {
+              if (a.Count < b.Count)
+                    return 1;
+              else if (a.Count > b.Count)
+                    return -1;
+              else
+                    return 0;
+            })
+
+        if(allWordsAlreadyPlotted === "NO")
+        {
+
+          if(toPlotAllwords.length > 50)
+          {
+            for(var counter = 0; counter <50; counter++)
+            {
+              top50All.push(toPlotAllwords[counter]);
+            }
+
+
+            drawWordle(top50All,top50All[49],top50All[0])
+
+            getDependencies(top50All);
+
+          }
+          else
+          {
+            drawWordle(toPlotAllwords,toPlotAllwords[persons.length-1],toPlotAllwords[0])
+            getDependencies(toPlotAllwords);
+          }
+
+          allWordsAlreadyPlotted = "YES"
+
+        }
+        else if(top50All.length != 0)
+        {
+          drawWordle(top50All,top50All[49],top50All[0])
+        }
+        else
+        {
+          drawWordle(toPlotAllwords,toPlotAllwords[toPlotAllwords.length-1],toPlotAllwords[0])
+        }
+
+
+
+      }
+
+
+
+      function processPerson()
+      {
+
+        d3.select(".wordcloud").remove();
+        allitems = "NO";
+
+
+        if(personAlreadyPlotted === "NO")
+        {
+          //console.log(persons + "here2")
+          convertMaptoArrayOfObjects(personsInBlog,persons,"person");   
+
+        }     
+
+
+
+        persons.sort(function(a,b)
+          {
+              if (a.Count < b.Count)
+                    return 1;
+              else if (a.Count > b.Count)
+                    return -1;
+              else
+                    return 0;
+            })
+
+        if(personAlreadyPlotted === "NO")
+        {
+
+          if(persons.length > 50)
+          {
+            for(var counter = 0; counter <50; counter++)
+            {
+              top50Persons.push(persons[counter]);
+            }
+
+
+            drawWordle(top50Persons,top50Persons[49],top50Persons[0])
+
+            getDependencies(top50Persons);
+
+          }
+          else
+          {
+            drawWordle(persons,persons[persons.length-1],persons[0])
+            getDependencies(persons);
+          }
+
+          personAlreadyPlotted = "YES"
+
+        }
+        else if(top50Persons.length != 0)
+        {
+          drawWordle(top50Persons,top50Persons[49],top50Persons[0])
+        }
+        else
+        {
+          drawWordle(persons,persons[persons.length-1],persons[0])
+        }
+      }
+
+
+      function processLocation()
+      {
+        
+        d3.select(".wordcloud").remove();
+        allitems = "NO";        
+
+        if (locationAlreadyPlotted === "NO")
+        {
+          convertMaptoArrayOfObjects(locationsInBlog,locations,"location")
+          
+        }
+
+        locations.sort(function(a,b)
+          {
+              if (a.Count < b.Count)
+                    return 1;
+              else if (a.Count > b.Count)
+                    return -1;
+              else
+                    return 0;
+            })
+
+        if(locationAlreadyPlotted === "NO")
+        {
+          if(locations.length > 50)
+          {
+            for(var counter = 0; counter <50; counter++)
+            {
+              top50Locations.push(locations[counter]);
+            }
+
+            drawWordle(top50Locations,top50Locations[49],top50Locations[0])
+            getDependencies(top50Locations)
+
+          }
+          else
+          {
+            drawWordle(locations,locations[locations.length-1],locations[0])
+            getDependencies(locations)
+
+          }
+
+          locationAlreadyPlotted = "YES"
+
+        }
+        else if (top50Locations.length != 0)
+        {
+          drawWordle(top50Locations,top50Locations[49],top50Locations[0])
+
+        }
+        else
+        {
+          drawWordle(locations,locations[locations.length-1],locations[0])
+        } 
+
+      }
+
+
+      function processOrg()
+      {
+        d3.select(".wordcloud").remove();
+
+        if (orgAlreadyPlotted === "NO")
+        {
+          convertMaptoArrayOfObjects(orgInBlog,org,"org")
+        }
+        
+        
+
+        org.sort(function(a,b)
+          {
+              if (a.Count < b.Count)
+                    return 1;
+              else if (a.Count > b.Count)
+                    return -1;
+              else
+                    return 0;
+            })
+
+        if (orgAlreadyPlotted === "NO")
+        {
+          if(org.length > 50)
+          {
+            for(var counter = 0; counter <50; counter++)
+            {
+              top50Org.push(org[counter]);
+            }
+
+            drawWordle(top50Org,top50Org[49],top50Org[0])
+            getDependencies(top50Org)
+
+          }
+          else
+          {
+            //console.log("else")
+            drawWordle(org,org[org.length-1],org[0])
+            getDependencies(org)
+          }
+
+          orgAlreadyPlotted = "YES";
+        }
+        else if (top50Org.length != 0)
+        {
+          drawWordle(top50Org,top50Org[49],top50Org[0])
+        }
+        else
+        {
+          drawWordle(org,org[org.length-1],org[0])
+        }
+        
+      }
+
+
+
+      function processMis()
+      {
+        d3.select(".wordcloud").remove();
+        allitems = "NO";
+
+        if(misAlreadyPlotted === "NO")
+        {
+          convertMaptoArrayOfObjects(misInBlog,mis, "mis")
+        } 
+        
+
+        mis.sort(function(a,b)
+          {
+              if (a.Count < b.Count)
+                    return 1;
+              else if (a.Count > b.Count)
+                    return -1;
+              else
+                    return 0;
+            })
+
+        if (misAlreadyPlotted === "NO")
+        {
+          if(mis.length > 50)
+          {
+            for(var counter = 0; counter <50; counter++)
+            {
+              top50Mis.push(mis[counter]);
+            }
+            drawWordle(top50Mis,top50Mis[49],top50Mis[0])
+            getDependencies(top50Mis)
+
+          }
+          else
+          {
+            drawWordle(mis,mis[mis.length-1],mis[0])
+            getDependencies(mis)
+          }
+          misAlreadyPlotted = "YES"
+        }
+        else if(top50Mis.length != 0)
+        {
+          drawWordle(top50Mis,top50Mis[49],top50Mis[0])
+        }
+        else
+        {
+          drawWordle(mis,mis[mis.length-1],mis[0])
+        }
+      }
+
+
+
+
+      function convertMaptoArrayOfObjects(theMap,theArray, sourcename)
+      {
+
+        Object.keys(theMap).forEach( function(key){
+
+          
+
+          if (theMap[key] > 10)
+          {
+            //console.log(key + " " + personsInBlog[key] )
+
+            //console.log(theMap[key] + key);
+
+            theArray.push(
+              {
+              "Word": key,
+              "Size": theMap[key],
+              "Count": theMap[key],
+              "Source": sourcename
+              })
+          }
+
+        })
+
+        
+
+      } // end of function convertMaptoArrayOfObjects
+
+
+      function processCount(theArray,theData)
+      {
+        theData.forEach(function(d){
+
+          //console.log(d);
+
+          
+
+          //console.log(indexValue)
+
+          if(theArray[d] === undefined)
+          {
+            theArray[d] = 1
+            
+            
+          }
+          else
+          {
+            theArray[d] = theArray[d] + 1;
+          }
+
+
+        })
+
+      }
+
+
+
+
+
+
+      function drawWordle(theArray,min50,max50)
+      {   
+        
+        //console.log("here1 " + min50.Count + "   " + max50.count + " " + theArray);
+         
+        wordSizeScale.domain([min50.Count,max50.Count]);
+
+        d3.layout.cloud().size([wordleWidth - 10, wordleHeight-10])
+                .words(theArray.map(function(d){                
+                    return {text: d.Word, size: d.Size, total:d.Count, source: d.Source}; // the wordlist.map is important else, the code for wordle wont work
+                }))
+                .rotate(0)
+                .fontSize(function(d) { return wordSizeScale(d.size); })
+                .on("end", draw)
+                .start();
+
+      }
+
+
+      function draw(words) {
+
+        //console.log(person);
+           svg =  d3.select("#wordle_div")
+                .append("svg")
+                    .attr("width", wordleWidth - 10)
+                    .attr("height", wordleHeight-10)
+                     .attr("class", "wordcloud")
+                     .attr("id","wordcloud")
+                .append("g")    
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                    .attr("transform", "translate(500,175)")
+
+                    .selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                      .attr("text-anchor","middle")
+                        .attr("class","wordle")
+                        .attr("id", function(d){return (d.text.split(" ").join("_").replace(".","") + "_wordle");}) // this step is to assign unique id's to each word
+                        .style("font-size", function(d) { return d.size + "px"; })
+                        .style("fill", function(d, i) {
+                if(d.source=="person") { return color1(i); }
+                else if(d.source=="location") { return color2(i); }
+                else if(d.source=="org") { return color3(i); }
+                else if(d.source=="mis") { return color4(i); }
+                     })
+
+                        .attr("transform", function(d) {
+                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        })
+                        .text(function(d) { return d.text; })
+                        .on("mouseover", function(d){   // this will highlight the word we mouse over on
+
+                            wordID = d3.select(this).attr("id");
+                            d3.selectAll(".wordle").style("opacity",0.5);
+                            d3.select("#" + wordID).style("opacity",1);
+
+                            //console.log(useForRelationship[wordID.replace("_wordle","").split("_").join(" ")])
+                            useForRelationship[wordID.replace("_wordle","").split("_").join(" ")].forEach(function(d){
+
+                              d3.select("#" + d.word.split(" ").join("_") + "_wordle").style("opacity",1);
+                              d3.select("#" + d.word.split(" ").join("_") + "_wordle").style("fill","red");
+                            })
+                        })
+                        .on("mouseout", function(d){
+
+                            d3.selectAll(".wordle").style("opacity",1);
+                            d3.selectAll(".wordle").style("fill", function(d, i) {
+                if(d.source=="person") { return color1(i); }
+                else if(d.source=="location") { return color2(i); }
+                else if(d.source=="org") { return color3(i); }
+                else if(d.source=="mis") { return color4(i); }
+                     })
+                         .on("dblclick", function(d){
+                         var id = d3.select(this).attr("id");
+                         id = id.replace("_wordle","");
+                         id = id.split("_").join(" ");
+                         var src = d.source;
+                         streamGraph(id,src);
+
+                     })
+
+                            
+                        })
+                        .on("contextmenu", function(d){
+
+                            selectedWord = d3.select(this);
+
+                            // var trans = selectedWord.attr("transform")
+                            // console.log(trans);
+
+                            
+                            // var selectionCircle = d3.selectAll(".wordcloud")
+                            //                             .append("circle")
+                            //                             .attr("transform",trans)
+                            //                             .attr("r", 2)
+                            //                             .style("fill","red");
+
+
+
+                           
+
+                            // d3.selectAll(".context-menu") // this adds an division in which we can add any HTML DOM element
+                            //     .data([1])
+                            //     .enter()
+
+                            d3.selectAll(".wordcloud")
+                                .append("div")
+                                    .attr("class","context-menu")
+
+                             d3.select('body').on('click.context-menu', function() {
+                                                      d3.select('.context-menu').style('display', 'none');
+                                                    });
+
+                            // d3.selectAll(".context-menu")
+                            //     .html('')
+                            //         .append("select")
+                            //             .on("change", change)
+                            //         .selectAll('option')
+                            //         .data(wordleActions)
+                            //         .enter()
+                            //             .append("option")
+                            //                 .text(function(d){
+                            //                     //console.log(d)
+                            //                     return d;
+                            //                 })
+
+
+
+                        })
+                    .append("title")
+                        .text(function(d)
+                            {
+                              //console.log(allitems);
+
+                              if (allitems === "YES")
+                              {
+                                return ("Count: " + d.total + ", Category: " + d.source.toUpperCase());                               
+                              }
+                              else
+                              {
+                                return ("Count: " + d.total);
+                              }
+                            })
+        } // end of function draw
+
+
+
+
+
+
+
+
+
+
+
+      // -------------------------------- end of wordle logic -------------------------------------------------
+
+      // ----------------------------- slider logic ----------------------------------------------------
+
+      
+        var sliderSVG = d3.select("#slider").append("svg")
+                .attr("width", 1100)
+                .attr("height", 35)
+
+
+        var x = d3.time.scale()
+          .domain([new Date(2007, 0, 1), new Date(2014, 11, 31)])
+          .range([10, 1000])
+          .clamp(true);   
+
+      var slider = sliderSVG.append("g")
+          .attr("class", "slider")
+          .attr("transform", "translate(" + 10 + "," + 15 + ")");
+
+      var drag = d3.behavior.drag()
+              //.on("start.interrupt", function() { slider.interrupt(); })
+              .on("drag", function() { hue(x.invert(d3.event.x));
+               })
+              .on("dragend", function() { //console.log(sliderDate);
+
+                  changeWordle(sliderDate);
+               }); 
+
+      slider.append("line")
+          .attr("class", "track")
+          .attr("x1", x.range()[0])
+          .attr("x2", x.range()[1])
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+          .attr("class", "track-inset")
+        .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+          .attr("class", "track-overlay")
+          .call(drag);
+
+      slider.insert("g", ".track-overlay")
+          .attr("class", "ticks")
+          .attr("transform", "translate(0," + 18 + ")")
+        .selectAll("text")
+        .data(x.ticks(15))
+        .enter().append("text")
+          .attr("class","slider-text")
+          .attr("x", x)
+          .attr("text-anchor", "middle")
+          .text(function(d) { return parseDate2(d); })
+
+
+
+
+      var handle = slider.insert("circle", ".track-overlay")
+          .attr("class", "handle")
+          .attr("r", 9);
+         // .append("title")
+          //.text("hi");
+
+
+      slider.transition() // Gratuitous intro!
+          .duration(750)
+          .tween("hue", function() {
+            var i = d3.interpolate(0, 70);
+            return function(t) { hue(i(t)); };
+          });
+
+      function hue(h) {
+        handle.attr("cx", x(h));
+        sliderDate = x.invert(d3.event.x); 
+      }
+      
+      
+
+    function changeWordle(theDate)
+    {
+
+      startDate = parseDate3(theDate);
+
+      mon = startDate.substring(0,2);
+      mon++;
+      year = startDate.substring(3,7);
+      endDate = mon + "-" + year
+      
+      getWordsAccordingToDate(startDate,endDate)
+      
+      alreadySelected = d3.select('input[name="radio"]:checked').node().value
+
+      
+
+      if(alreadySelected === "1")
+      {
+        allitems = "NO"
+        processPerson()
+
+      }
+      else if(alreadySelected === "2")
+      {
+        allitems = "NO"
+        processLocation()
+
+      }
+      else if (alreadySelected === "3")
+      {
+        allitems = "NO"
+        processOrg()
+
+      }
+      else if (alreadySelected === "4")
+      {
+        allitems = "NO"
+        processMis()
+
+      }
+      else if (alreadySelected === "5")
+      {
+        allitems = "YES"
+        processAll();
+      }
+
+
+
+      
+      
+      
+
+
+
+    }
+
+
+      // ------------------------- end of slider logic -------------------------------------------------
+
+
+// -----------------------------------------------------------------start of indexer logic
+
+
+
+      function processSearchTerm(theSearchTerm)
+      {
+        searchWord = theSearchTerm;
+
+        //console.log(searchWord + "here")
+
+        if(allWords[searchWord] != undefined)
+        {
+          inBlogs = allWords[searchWord].inBlogs
+          count = allWords[searchWord].Total
+
+          if (count > 1000)
+          {
+            Threshold = 0.3
+          }
+          else if (count > 800 && count < 1000) {Threshold = 0.4}
+          else if (count > 500 && count < 800) {Threshold = 0.5}
+          else {Threshold = 0.6}
+
+          getAllWordsFromRetrievedBlogs(inBlogs, count)         
+        }
+      }
+
+
+      function createSearchList(theArray,theSource)
+      {
+        // Calling Function : getAllWordsFromRetrievedBlogs
+        // Description    : 
+        //            1) Takes and array as input.
+        /*            2) for each word in the array, check whether the total count each word > threshold value
+                    3) if count > threshold value, push word into searchList
+        */
+
+          var satisfyCount = 0;
+
+          theArray.forEach(function(d){
+
+            try{
+
+              if (d === searchWord)
+              {
+                return;
+              }
+
+              var wordCount = allWords[d].Total;
+
+            }catch (error)
+              {
+                return;
+              }
+
+            if(wordCount > (count * Threshold))
+                {
+                  satisfyCount = satisfyCount + 1;
+
+                  if(searchList.indexOf(d) === -1)
+                  {
+                    searchList.push(d);
+
+                    newSearchList.push(
+                    {
+                      "Word": d,
+                      "Size": 0,
+                      "Count": 0,
+                      "Source": theSource
+                    });
+                  }
+                }
+
+          })
+
+        return satisfyCount;
+      }
+
+
+      function getAllWordsFromRetrievedBlogs(inBlogs,count)
+      {
+        
+        
+        inBlogs.forEach(function(d){
+
+          
+          if(blogAlreadyIndexed.indexOf(d) === -1)
+          {
+
+            //console.log(count + "here2")
+
+            var allPersons1   = allData[d].person.split("|")
+            var allLoc1     = allData[d].location.split("|")
+            var allOrg1     = allData[d].organization.split("|")
+            var allMis1     = allData[d].miscellaneous.split("|")
+
+
+            var countPerson = 0;
+            var countLoc = 0;
+            var countOrg = 0;
+            var countMis = 0;
+
+
+            
+            countPerson = createSearchList(allPersons1,"person");
+
+            countLoc = createSearchList(allLoc1,"location");
+
+            countOrg = createSearchList(allOrg1,"org");
+
+            countMis = createSearchList(allMis1,"mis");
+
+            
+
+
+            
+
+
+            //console.log(countPerson > 0 || countOrg > 0 || countLoc > 0 || countMis > 0 + "here3")
+
+            if(countPerson > 0 || countOrg > 0 || countLoc > 0 || countMis > 0)
+            {
+
+              allWordsInABlog = allPersons1.join(",").concat(" ").concat(allLoc1.join(","));
+              allWordsInABlog = allWordsInABlog.concat(" ").concat(allOrg1.join(","));
+              allWordsInABlog = allWordsInABlog.concat(" ").concat(allMis1.join(","));
+
+              allWordsInABlog = allWordsInABlog.split(",");
+
+              allWordsInABlog.forEach(function(d){
+
+                d = d.split(" ").join("__");
+                words1 = words1.concat(d).concat(" ");
+            
+              })
+
+              dataInOneBlog.push(words1);
+              words1 = "";
+            
+              blogAlreadyIndexed.push(d);
+              
+            }
+            
+          }
+        })
+
+        loadDocInIndex(dataInOneBlog);
+
+        result.splice(0);
+        top50.splice(0);
+
+        // searchList.forEach(function(d){
+
+        //  searchRelationShip(searchWord,d);
+        // })
+
+        newSearchList.forEach(function(d)
+        {
+          searchRelationShip(searchWord, d.Word, d.Source)
+        })
+
+        sortResult();
+
+      }
+
+
+
+
+      
+
+      function loadDocInIndex(data)
+      {
+        //console.log(data)
+
+        data.forEach(function(d,i){
+
+
+          var doc = {
+          "id": i,
+          "words": d
+          }
+
+          //console.log(doc);
+
+          index.addDoc(doc);
+
+
+
+        })
+
+          
+      }
+
+
+      
+      function searchRelationShip(firstTerm, secondTerm, theSource)
+      {
+        
+        x2 = index.search(firstTerm.split(" ").join("__") + " " + secondTerm.split(" ").join("__"), {
+
+        
+          fields:{
+          words: {boost: 1, bool: "AND"}          
+          },
+          bool: "AND"
+        
+
+          } )
+
+        if(x2.length > 1){
+          result.push({"Word":secondTerm,"Size":x2.length,"Count":x2.length,"Source":theSource});
+        }
+        
+      }
+
+
+      function sortResult()
+      {
+
+        result.sort (function(a,b){
+          if (a.Count > b.Count)
+          {
+            return -1;
+          }
+          else if (a.Count < b.Count)
+          {
+            return 1;
+          }
+          else
+          {
+            return 0;
+          }
+        })
+
+        if (result.length > 50)
+        {
+          for (var counter5=0; counter5 < 50; counter5++)
+          {
+            top50.push(result[counter5]);
+
+          }
+
+          
+        }
+        else if (result.length > 0)
+        {
+          top50 = result;
+          
+
+        }
+
+
+      }
+
+
+
+
+      function seachForTerms(firstTerm,secondTerm)
+      {
+
+        x1 = dateRangeIndex.search(firstTerm.split(" ").join("__") + " " + secondTerm.split(" ").join("__"), {
+
+        
+          fields:{
+          words: {boost: 1, bool: "AND"}          
+          },
+          bool: "AND"
+        
+
+          } )
+
+        //console.log(x1.length + "here")
+
+        // if(x1.length > 1){
+        //  //result.push({"Word":secondTerm,"Count":x.length});
+        //  console.log(firstTerm + " " + secondTerm + " = " + x1.length);
+        // }
+        return x1.length;
+      }
+
+
+
+      function getDependencies(theArray)
+      {
+        relationShip.splice(0);
+        isAlreadyLinked.splice(0);
+        useForRelationship = new Map();
+        testGraph = {"nodes":[],"links":[]};
+        
+
+        for (var indexCounter = 0; indexCounter < theArray.length; indexCounter++)
+        {
+          tempArray.splice(0);
+          var group;
+          //console.log(theArray[indexCounter].Source + "here")
+          if(theArray[indexCounter].Source === "person")
+          {
+            group = 1;
+          }
+          else if(theArray[indexCounter].Source === "location")
+          {
+            group = 2;
+
+          }
+          else if(theArray[indexCounter].Source === "org")
+          {
+            group = 3;
+
+          }
+          else if(theArray[indexCounter].Source === "mis")
+          {
+            group = 4;
+
+          }
+
+          testGraph.nodes.push({"name": theArray[indexCounter].Word, "group": group})
+
+          for (var indexCounter2 = 0; indexCounter2 < theArray.length; indexCounter2++)
+          {
+
+            if (indexCounter === indexCounter2)
+            {
+              continue;
+            }
+            
+            var returnValue = seachForTerms(theArray[indexCounter].Word,theArray[indexCounter2].Word);            
+
+            if (returnValue > 5)
+            {
+              var tempString = theArray[indexCounter].Word + "__" + theArray[indexCounter2].Word;
+              var tempString2 = theArray[indexCounter2].Word + "__" + theArray[indexCounter].Word
+
+              if( isAlreadyLinked.indexOf(tempString) == -1 && isAlreadyLinked.indexOf(tempString2) == -1 )
+              {             
+                testGraph.links.push({"source": indexCounter, "target": indexCounter2, "value": returnValue })
+                totalLinkValue= totalLinkValue + returnValue;
+                isAlreadyLinked.push(tempString);
+                isAlreadyLinked.push(tempString2);
+
+              }
+
+              var tempObj = {"word":theArray[indexCounter2].Word , "count": returnValue}
+              tempArray.push(tempObj);
+              relationShip.push({
+                "source": indexCounter,
+                "target": indexCounter2,
+                "sourceName": theArray[indexCounter].Word,
+                "targetName": theArray[indexCounter2].Word,
+                "value":  returnValue 
+              })
+
+            } 
+          }
+
+          
+
+          saveInMap(useForRelationship,[theArray[indexCounter].Word],tempArray)
+
+        }
+      }
+
+
+
+      function saveInMap(theMap,theWord,theArray)
+      {
+        theMap[theWord] = theArray.map(function(d){ return d});
+        testArray.push(theArray);
+
+      }
+
+
+
+
+
+
+      // end of indexer logic
+    
+      
+
+      // ------------------------------ start of range logic ------------------------
+
+      function showSearch()
+      {
+        d3.select(".slider").style("display","none");
+        //d3.select(".cat").style("display","none");
+        d3.selectAll(".range").style("display","none");
+        d3.selectAll(".search").style("display","block");
+
+      }
+
+      function showRange()
+      {
+        //d3.select(".cat").style("display","block");
+        d3.select(".slider").style("display","none");
+        d3.selectAll(".search").style("display","none");
+        d3.selectAll(".range").style("display","block");
+      }
+
+      function showSlider()
+      {
+        //d3.select(".cat").style("display","block");
+        d3.selectAll(".range").style("display","none");
+        d3.selectAll(".search").style("display","none");
+        d3.select(".slider").style("display","block");
+        getWordsAccordingToDate("01-2007","02-2007")
+        alreadySelected = d3.select('input[name="radio"]:checked').node().value
+
+      
+
+      if(alreadySelected === "1")
+      {
+        allitems = "NO"
+        processPerson()
+
+      }
+      else if(alreadySelected === "2")
+      {
+        allitems = "NO"
+        processLocation()
+
+      }
+      else if (alreadySelected === "3")
+      {
+        allitems = "NO"
+        processOrg()
+
+      }
+      else if (alreadySelected === "4")
+      {
+        allitems = "NO"
+        processMis()
+
+      }
+      else if (alreadySelected === "5")
+      {
+        allitems = "YES"
+        processAll();
+      }
+
+      }
+
+      //--------------------------end of range logic
+
+
+      function popOut(){
+
+
+
+   //       sessionStorage.setItem('myArray', testGraph);
+   //       (function (global) {          
+   //         global.localStorage.setItem("rel", testGraph);          
+      // }(window));
+
+      var userData = {
+         storeUserDataInSession: function(userData) {
+             var userObjectString = JSON.stringify(userData);
+             window.sessionStorage.setItem('userObject',userObjectString)
+         },
+         getUserDataFromSession: function() {
+             var userData = window.sessionStorage.getItem('userObject')
+             return JSON.parse(userData);
+         }
+        } 
+
+          userData.storeUserDataInSession(testGraph);
+         
+          
+          window.open('ArcDiagram.html', "_blank", "toolbar=0, titlebar=0, location=0, scrollbars=0, statusbar=0, status =yes, menubar=0, top=200, left=500, width=570, height=400").focus();
+          
+      }
+
+
+
+
+      function searchRange()
+      {
+        var start = document.getElementById("startRange").value
+        var end = document.getElementById("endRange").value
+
+          
+        getWordsAccordingToDate(start,end);
+        alreadySelected = d3.select('input[name="radio"]:checked').node().value
+
+      
+
+      if(alreadySelected === "1")
+      {
+        allitems = "NO"
+        processPerson()
+
+      }
+      else if(alreadySelected === "2")
+      {
+        allitems = "NO"
+        processLocation()
+
+      }
+      else if (alreadySelected === "3")
+      {
+        allitems = "NO"
+        processOrg()
+
+      }
+      else if (alreadySelected === "4")
+      {
+        allitems = "NO"
+        processMis()
+
+      }
+      else if (alreadySelected === "5")
+      {
+        allitems = "YES"
+        processAll();
+      }
+      }
+
+
+      function search()
+      {
+        var term = document.getElementById("search").value
+        d3.select(".wordcloud").remove();
+        processSearchTerm(term);
+        drawWordle(top50,top50[top50.length-1],top50[0])
+      getDependencies(top50);
+
+      }
+
+
+      function streamGraph(inText,src)
+      {
+          d3.selectAll(".svgStream").remove();
+
+
+
+           var margin = {
+                    top: 50,
+                    right: 50,
+                    bottom: 50,
+                    left: 50
+                 },
+                 width = 960 - margin.left - margin.right,
+                 height = 500 - margin.top - margin.bottom;
+
+      //Important, each row is one "signal"
+
+           if(argData.indexOf(inText)!=-1){
+              //console.log("TRUE");
+              newData.splice(argData.indexOf(inText),1);
+              argData.splice(argData.indexOf(inText),1);
+           }
+           else {
+              var temp;
+              if(src=="person") { temp = personCat[inText].months; }
+              else if(src=="location") { temp = locationCat[inText].months; }
+              else if(src=="org") { temp = orgCat[inText].months; }
+              else if(src=="mis") { temp = misCat[inText].months; }
+              for(var i=0; i<temp.length; i++) { temp[i] = +temp[i]; }
+
+              while(temp.length!=120){
+                 temp.push(0);
+              }
+
+
+              temp = temp.map(function (d, i) {
+                 return {
+                    x: i,
+                    y: d,
+                    y0: 0,
+                    word: inText,
+                    source: src
+                 }
+              });
+
+              newData.push(temp);
+              argData.push(inText);
+
+
+
+              //console.log(newData);
+              //console.log(argData);
+         }
+         //console.log(inText);
+         //console.log(argData.indexOf(inText));
+
+
+         var color = d3.scale.linear()
+               .range(["#0A3430", "#1E5846", "#3E7E56", "#6BA55F", "#A4CA64", "#E8ED69"]);
+
+
+               //.domain([0, max]); //max y is the sum we calculated earlier
+
+
+            svg = d3.select("body").append("svg")
+                  .attr("width", width + margin.left + margin.right)
+                  .attr("height", height + margin.top + margin.bottom)
+                  .attr("class", "svgStream")
+                  .append("g")
+                  .attr("transform", "translate(" + (margin.left+290) + "," + margin.top + ")");
+            //svgAlreadyPlotted = "YES"
+
+
+         var stack = d3.layout.stack()
+               .offset("wiggle"); //<-- creates a streamgraph
+
+         var layers = stack(newData);
+         var x = d3.scale.linear()
+               .range([0, width])
+               .domain([25, 120]);
+
+         var y = d3.scale.linear()
+               .range([height, 0])
+               .domain([0, d3.max(layers, function(layer) { return d3.max(layer, function(d) { return d.y0 + d.y; }); })]);
+
+//vis type
+         var area = d3.svg.area()
+               .interpolate('cardinal')
+               .x(function (d, i) {
+                  return x(i);
+               })
+               .y0(function (d) {
+                  return y(d.y0);
+               })
+               .y1(function (d) {
+                  return y(d.y0 + d.y);
+               });
+
+
+            svg.selectAll(".layer")
+                  .data(layers)
+                  .enter().append("path")
+                  .attr("class", "layer")
+                  .attr("word", inText)
+                  .attr("source", src)
+                  .attr("d", function (d) {
+                     return area(d);
+                  })
+                  .style("stroke", "white")
+                  .style("fill", function(d) {
+                     if (d[0].source == "person") {
+                        return "#0047ab"
+                     }
+                     else if (d[0].source == "location") {
+                        return "#0f9d58"
+                     }
+                     else if (d[0].source == "org") {
+                        return "#b82601"
+                     }
+                     else if (d[0].source == "mis") {
+                        return "#f81884"
+                     }
+                  })
+                  .on("mouseover", function() {
+                     d3.selectAll(".layer").style("opacity",0.3);
+                     d3.select(this).style("opacity",1);
+                  })
+                  .on("dblclick", function(d) {
+                     var id = d[0].word;
+                     var source = d[0].source;
+                     //console.log(id + " " + source);
+                     streamGraph(id, src)
+                  })
+                  .on("mouseout", function() {
+                     d3.selectAll(".layer").style("opacity",1);
+                  })
+                  .append("title")
+                  .text(function(d) {
+                     return ("Word: " + d[0].word);
+                  })
+                  .transition()
+                  .duration(2500);
+      }
+
+
+</script>  
+
+  <!-- <!-- Footer -->
+  <!-- <footer class="w3-container w3-padding-16 w3-light-grey">
+    <h4>Project By</h4>
+    <p>Roshan, Jyotsna Andrew</p>
+  </footer>
+   -->
+  <!-- End page content -->
+</div>
+
+<script>
+// Get the Sidenav
+var mySidenav = document.getElementById("mySidenav");
+
+// Get the DIV with overlay effect
+var overlayBg = document.getElementById("myOverlay");
+
+// Toggle between showing and hiding the sidenav, and add overlay effect
+function w3_open() {
+    if (mySidenav.style.display === 'block') {
+        mySidenav.style.display = 'none';
+        overlayBg.style.display = "none";
+    } else {
+        mySidenav.style.display = 'block';
+        overlayBg.style.display = "block";
+    }
+}
+
+// Close the sidenav with the close button
+function w3_close() {
+    mySidenav.style.display = "none";
+    overlayBg.style.display = "none";
+}
+// function  TextBoxes(){
+//   var input1 = document.createElement("input");
+//   var input2 = document.createElement("input");
+//   var submit = document.createElement("button");
+// //Assign different attributes to the element.
+// input1.setAttribute("type", "text");
+// input1.setAttribute("value", "");
+// input1.setAttribute("name", "Test Name");
+// input1.setAttribute("style", "width:100px");
+
+// //Assign different attributes to the element.
+// input2.setAttribute("type", "text");
+// input2.setAttribute("value", "");
+// input2.setAttribute("name", "Test Name");
+// input2.setAttribute("style", "width:100px");
+
+// //submit.setAttribute("type", type);
+// //submit.setAttribute("value", type);
+// //submit.setAttribute("name", type);
+// //submit.setAttribute("onclick", );
+
+// var foo = document.getElementById("textboxes");
+
+// //Append the element in page (in span).
+// foo.appendChild(input1);
+// foo.appendChild(input2);
+// //foo.appendChild(submit);
+
+// }
+</script>
+
+</body>
+</html>
+

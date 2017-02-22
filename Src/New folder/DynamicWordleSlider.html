@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.ticks {
+  font: 10px sans-serif;
+}
+
+.track,
+.track-inset,
+.track-overlay {
+  stroke-linecap: round;
+}
+
+.track {
+  stroke: #000;
+  stroke-opacity: 0.3;
+  stroke-width: 10px;
+}
+
+.track-inset {
+  stroke: #ddd;
+  stroke-width: 8px;
+}
+
+.track-overlay {
+  pointer-events: stroke;
+  stroke-width: 50px;
+  cursor: crosshair;
+}
+
+.handle {
+  fill: #fff;
+  stroke: #000;
+  stroke-opacity: 0.5;
+  stroke-width: 1.25px;
+}
+
+</style>
+<svg width="960" height="500"></svg>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/d3-time.v1.min.js"></script>
+<script src="https://d3js.org/d3-time-format.v2.min.js"></script>
+<script src="d3.layout.cloud.js"></script>
+<script type="text/javascript">
+var svg = d3.select("svg"),
+    margin = {right: 50, left: 50},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height");
+var sliderDate;
+var parseDate = d3.timeFormat("%b-%Y");
+//var x = d3.scaleTime()
+  //  .domain([0, 180])
+  //  .range([0, width])
+  //  .domain([new Date(2000, 0, 1, 0), new Date(2010, 0, 1, 2)])
+  //  .ticks(d3.timeMinute.every(1000));
+
+
+var x = d3.time.scale()
+    .domain([new Date(2007, 0, 1), new Date(2014, 11, 31)])
+    .range([margin.left, width])
+    .clamp(true);   
+
+var slider = svg.append("g")
+    .attr("class", "slider")
+    .attr("transform", "translate(" + margin.left + "," + height / 2 + ")");
+
+var drag = d3.behavior.drag()
+        //.on("start.interrupt", function() { slider.interrupt(); })
+        .on("drag", function() { hue(x.invert(d3.event.x));
+         })
+        .on("dragend", function() { console.log(sliderDate); }); 
+
+slider.append("line")
+    .attr("class", "track")
+    .attr("x1", x.range()[0])
+    .attr("x2", x.range()[1])
+  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+    .attr("class", "track-inset")
+  .select(function() { return this.parentNode.appendChild(this.cloneNode(true)); })
+    .attr("class", "track-overlay")
+    .call(drag);
+
+slider.insert("g", ".track-overlay")
+    .attr("class", "ticks")
+    .attr("transform", "translate(0," + 18 + ")")
+  .selectAll("text")
+  .data(x.ticks(15))
+  .enter().append("text")
+    .attr("class","slider-text")
+    .attr("x", x)
+    .attr("text-anchor", "middle")
+    .text(function(d) { return parseDate(d); })
+
+
+
+
+var handle = slider.insert("circle", ".track-overlay")
+    .attr("class", "handle")
+    .attr("r", 9);
+   // .append("title")
+    //.text("hi");
+
+
+slider.transition() // Gratuitous intro!
+    .duration(750)
+    .tween("hue", function() {
+      var i = d3.interpolate(0, 70);
+      return function(t) { hue(i(t)); };
+    });
+
+function hue(h) {
+  handle.attr("cx", x(h));
+sliderDate = x.invert(d3.event.x); 
+}
+
+
+
+//initializing a scale to scale the frequencies of the words
+        var wordSizeScale = d3.scale.linear().range([6,150]);
+        wordSizeScale.domain([0,2000]);
+
+        //initializing variable to hold valueof the word selected from the wordle
+        var wordID;
+
+        var color = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"]);
+
+
+
+      var allData = [];
+      var parseData = [];
+
+      var personsInBlog = new Map();  
+      var locationsInBlog = new Map();
+      var orgInBlog = new Map();    
+      var misInBlog = new Map();
+      var person =[];
+      
+
+
+      // variables to parse date
+
+      parseDate = d3.time.format("%Y-%m-%d").parse;
+      
+
+      d3.tsv("huffington.tsv", function(error,data)
+      {
+        if (error) {return error;}
+
+
+        allData = data;
+
+
+        allData.forEach(function(d){
+
+
+          d.time = d.time.substring(0,10);
+
+
+          if (parseDate(d.time) > new Date("12/31/2009") && parseDate(d.time) < new Date("12/31/2011"))
+          {
+            //console.log("here")
+
+            parsePerson = d.person.split("|");
+            processCount(personsInBlog,parsePerson);
+
+            parseLocation = d.location.split("|");
+            processCount(locationsInBlog,parseLocation);
+
+            parseOrg = d.organization.split("|");
+            processCount(orgInBlog,parseOrg);
+
+            parseMis = d.miscellaneous.split("|");
+            processCount(misInBlog,parseMis)
+
+
+            
+
+            
+            
+
+          }
+        })
+
+        Object.keys(personsInBlog).forEach( function(key){
+
+          if (personsInBlog[key] > 100)
+          {
+            //console.log(key + " " + personsInBlog[key] )
+            person.push(
+              {
+              "Word": key,
+              "Size": personsInBlog[key],
+              "Count": personsInBlog[key]
+              }
+            )
+          }
+
+        })
+
+
+        drawWordle()
+
+
+
+      }); //end of d3.tsv
+
+
+
+      function processCount(theArray,theData)
+      {
+        theData.forEach(function(d){
+
+          //console.log(d);
+
+          
+
+          //console.log(indexValue)
+
+          if(theArray[d] === undefined)
+          {
+            theArray[d] = 1
+            
+            
+          }
+          else
+          {
+            theArray[d] = theArray[d] + 1;
+          }
+
+
+        })
+
+      }
+
+
+
+      function drawWordle()
+      {
+
+        d3.layout.cloud().size([1200, 300])
+                .words(person.map(function(d){                
+                    return {text: d.Word, size: d.Size, total:d.Count}; // the wordlist.map is important else, the code for wordle wont work
+                }))
+                .rotate(0)
+                .fontSize(function(d) { return wordSizeScale(d.size); })
+                .on("end", draw)
+                .start();
+
+      }
+
+
+      function draw(words) {
+
+        console.log(person);
+            d3.select("body")
+                .append("svg")
+                    .attr("width", 1200)
+                    .attr("height", 500)
+                     .attr("class", "wordcloud")
+                .append("g")    
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                    .attr("transform", "translate(500,200)")
+
+                    .selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                        .attr("class","wordle")
+                        .attr("id", function(d){return (d.text.split(" ").join("_").replace(".","") + "_wordle");}) // this step is to assign unique id's to each word
+                        .style("font-size", function(d) { return d.size + "px"; })
+                        .style("fill", function(d, i) { return color(i); })
+                        .attr("transform", function(d) {
+                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        })
+                        .text(function(d) { return d.text; })
+                        .on("mouseover", function(d){   // this will highlight the word we mouse over on
+
+                            wordID = d3.select(this).attr("id");
+                            d3.selectAll(".wordle").style("opacity",0.1);
+                            d3.select("#" + wordID).style("opacity",1);
+                        })
+                        .on("mouseout", function(d){
+
+                            d3.selectAll(".wordle").style("opacity",1);
+                        })
+                        .on("contextmenu", function(d){
+
+                            selectedWord = d3.select(this);
+
+                            // var trans = selectedWord.attr("transform")
+                            // console.log(trans);
+
+                            
+                            // var selectionCircle = d3.selectAll(".wordcloud")
+                            //                             .append("circle")
+                            //                             .attr("transform",trans)
+                            //                             .attr("r", 2)
+                            //                             .style("fill","red");
+
+
+
+                           
+
+                            // d3.selectAll(".context-menu") // this adds an division in which we can add any HTML DOM element
+                            //     .data([1])
+                            //     .enter()
+
+                            d3.selectAll(".wordcloud")
+                                .append("div")
+                                    .attr("class","context-menu")
+
+                             d3.select('body').on('click.context-menu', function() {
+                                                      d3.select('.context-menu').style('display', 'none');
+                                                    });
+
+                            d3.selectAll(".context-menu")
+                                .html('')
+                                    .append("select")
+                                        .on("change", change)
+                                    .selectAll('option')
+                                    .data(wordleActions)
+                                    .enter()
+                                        .append("option")
+                                            .text(function(d){
+                                                console.log(d)
+                                                return d;
+                                            })
+
+
+
+                        })
+                    .append("title")
+                        .text(function(d)
+                            {
+                                
+                                return ("Count: " + d.total);
+                            })
+        } // end of function draw
+
+
+
+
+      
+
+      
+
+
+</script>

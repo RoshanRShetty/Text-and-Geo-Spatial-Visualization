@@ -1,0 +1,150 @@
+<meta charset="utf-8">
+<style>
+
+circle {
+  stroke-width: 1.5px;
+}
+
+line {
+  stroke: #999;
+}
+#tooltip-container {
+        position: absolute;
+        background-color: #fff;
+        color: #000;
+        padding: 10px;
+        border: 1px solid;
+        display: none;
+      }
+      .tooltip_key {
+        font-weight: bold;
+      }
+      .tooltip_value {
+        margin-left: 20px;
+        float: right;
+      }
+
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var width = 550,
+    height = 380,
+    radius = 6;
+
+var arcData; 
+
+//var testGraph; // = {"nodes":[],"links":[]};
+
+// (function (global) {          
+//              testGraph = global.localStorage.getItem("rel");          
+//       }(window));
+
+// testGraph = sessionStorage.getItem('myArray')
+
+      var userData = {
+         storeUserDataInSession: function(userData) {
+             var userObjectString = JSON.stringify(userData);
+             window.sessionStorage.setItem('userObject',userObjectString)
+         },
+         getUserDataFromSession: function() {
+             var userData = window.sessionStorage.getItem('userObject')
+             return JSON.parse(userData);
+         }
+        } 
+
+  var testGraph = userData.getUserDataFromSession();
+
+
+// {"nodes":[],"links":[]};
+
+// testGraph.nodes.push({"name": "Myriel", "group": 1})
+// testGraph.links.push({"source": 1, "target": 0, "value": 1})
+// testGraph.nodes.push({"name": "Yourriel", "group": 1})
+
+
+
+var color = d3.scale.linear()
+            .domain([1,2,3,4])
+            .range(["#0047ab","#1adb13","#cb25df","#222"])
+
+var fill = color;
+
+//var fill = d3.scale.category20();
+
+var force = d3.layout.force()
+    .gravity(.05)
+    .charge(-240)
+    .linkDistance(50)
+    .size([width, height]);
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var tooltip = svg.append("text").attr("x",50).attr("y",100);
+
+  var link = svg.selectAll("line")
+      .data(testGraph.links)
+      .enter().append("line");
+
+  var node = svg.selectAll("circle")
+      .data(testGraph.nodes)
+      .enter().append("circle")
+      .attr("id",function(d){
+            console.log(d.name);
+            return d.name.split(" ").join("_");
+          })
+      .attr("r", radius - 0.5)
+      .style("fill", function(d) { return fill(d.group); })
+      .style("stroke", function(d) { return d3.rgb(fill(d.group)).darker(); })
+      .call(force.drag);
+  
+  d3.selectAll("circle")
+        .append("title")
+      .text(function(d){
+       // console.log(d.name);
+            return d.name.split(" ").join("_");
+      });
+
+  force
+      .nodes(testGraph.nodes)
+      .links(testGraph.links)
+      .on("tick", tick)
+      .start();
+
+  function tick() {
+    node.attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x)); })
+        .attr("cy", function(d) { return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
+
+    link.attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
+  }
+
+//  d3.selectAll(".circle")
+//       .on("mouseover",function(d){
+//         var hi = d3.select(this).attr("id");
+
+//         console.log(hi);
+
+
+//         var mouse = d3.mouse(svg12.node()).map(function(d) {
+//               return parseInt(d);
+//               });
+//               tooltip.attr("x",d3.mouse(this)[0]) 
+//               .attr("y",d3.mouse(this)[1])
+//               .classed('hidden',false)
+//               .text(hi);
+            
+//       })
+//       .on("mouseout",function(d){
+//               tooltip.classed('hidden',true);
+//               d3.selectAll(".circle").style("stroke-opacity", 1);
+//           });
+
+
+</script>

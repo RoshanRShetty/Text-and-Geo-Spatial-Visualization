@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title> WordsInBlogs </title>
+		<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"> </script>
+		<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+	</head>
+	<body>
+	Hi
+
+	<a href='#' onclick='downloadCSV({ filename: "allWords.csv" });'>Download All-Words File</a></br>
+	
+
+		<script type="text/javascript">
+
+			// Initializing Global Variables to be used in the program
+			var allData;
+
+
+
+			// allLocation Format : allWords[key] = {Word: the actual word, BlogIn: an array} 
+			var allWords = new Map();
+			
+
+			var tempArray = [];
+
+			var blogNo =[];
+
+			
+			var date;
+			var location;
+			var people;
+			var category;
+			var missc;
+			var parseLocation;
+			var modYear = 2004;
+
+			
+			//Initializing time and date parsers for handling date.
+			parseDate = d3.time.format("%Y-%m").parse;
+			formatDate = d3.time.format("%b-%Y");
+
+			
+			
+
+			
+
+			//Loading the wikinews data file and processing it
+			d3.tsv("../Data/huffington.tsv", function(error,data)
+			{
+				allData = data
+				if (error) throw error;
+
+				data.forEach(function(d,i){
+
+					
+					processName(d,i);
+					processLocation(d,i);
+					processOrganization(d,i);
+					processMiss(d,i);
+
+
+					
+
+					
+
+					
+
+				})
+
+			}) // end of d3.tsv
+
+			
+			
+			
+
+			//function for processing all locations
+			function processLocation(d,i)
+			{
+
+				parseLocation = d.location.replace("\"","").replace(",","-").split("|");
+				parseLocation = 
+
+				parseLocation.forEach(function(eachLocation)
+				{
+
+					if (eachLocation === "keys" )
+					{
+						eachLocation = "'keyss'"
+					}
+					else if (eachLocation === "set")
+					{
+						eachLocation = "'sets'"
+					}
+					else if (eachLocation === "values" )
+					{
+						eachLocation = "'valuess'"
+					}
+
+					var isLocationPresent = getMapValue(eachLocation)
+
+					
+					if (isLocationPresent === undefined)
+					{
+						allWords[eachLocation] = { "Word":eachLocation, "Total":1, "inBlog": []}
+
+						allWords[eachLocation].inBlog.push(i);
+						
+					}
+					else
+					{
+						allWords[eachLocation].Total = allWords[eachLocation].Total + 1
+						allWords[eachLocation].inBlog.push(i);
+						
+					}
+
+
+
+				})
+
+
+				
+
+
+
+			}
+
+
+			function processName(d,i)
+			{
+				parseName = d.person.replace("\"","").replace(",","-").split("|");
+
+				parseName.forEach(function(eachPerson){
+
+					if (eachPerson === "keys" )
+					{
+						eachPerson = "'keyss'"
+					}
+					else if (eachPerson === "set")
+					{
+						eachPerson = "'sets'"
+					}
+					else if (eachPerson === "values" )
+					{
+						eachPerson = "'valuess'"
+					}
+
+					var isPersonPresent = getMapValue(eachPerson)
+
+					//console.log(eachPerson)
+
+					if (isPersonPresent === undefined)
+					{
+						allWords[eachPerson] = { "Word":eachPerson, "Total":1, "inBlog": []}
+
+						allWords[eachPerson].inBlog.push(i);
+						
+							
+					}
+					else
+					{
+						allWords[eachPerson].Total = allWords[eachPerson].Total + 1
+						allWords[eachPerson].inBlog.push(i);
+					}
+
+				})
+			}
+
+
+			function processOrganization(d,i)
+			{
+
+				parseOrganization = d.organization.replace("\"","").replace(",","-").split("|");
+
+				parseOrganization.forEach(function(eachOrganization)
+				{
+
+					if (eachOrganization === "keys" )
+					{
+						eachOrganization = "'keyss'"
+					}
+					else if (eachOrganization === "set")
+					{
+						eachOrganization = "'sets'"
+					}
+					else if (eachOrganization === "values" )
+					{
+						eachOrganization = "'valuess'"
+					}
+
+
+					var isOrganizationPresent = getMapValue(eachOrganization)
+					
+
+					
+
+					if (isOrganizationPresent === undefined)
+					{
+						
+						allWords[eachOrganization] = { "Word":eachOrganization, "Total":1, "inBlog": []}
+
+						allWords[eachOrganization].inBlog.push(i);
+							
+					}
+					else
+					{
+						allWords[eachOrganization].Total = allWords[eachOrganization].Total + 1
+						allWords[eachOrganization].inBlog.push(i);
+					}
+
+				})
+			}
+
+
+			function processMiss(d,i)
+			{
+				parseMiss = d.miscellaneous.replace("\"","").replace(",","-").split("|");
+
+				parseMiss.forEach(function(eachMiss)
+				{
+					if (eachMiss === "keys" )
+					{
+						eachMiss = "'keyss'"
+					}
+					else if (eachMiss === "set")
+					{
+						eachMiss = "'sets'"
+					}
+					else if (eachMiss === "values" )
+					{
+						eachMiss = "'valuess'"
+					}
+
+					var isMissPresent = getMapValue(eachMiss)
+
+					if (isMissPresent === undefined)
+					{
+						allWords[eachMiss] = { "Word":eachMiss, "Total":1, "inBlog": []}
+
+						allWords[eachMiss].inBlog.push(i);
+						
+					}
+					else
+					{
+						allWords[eachMiss].Total = allWords[eachMiss].Total + 1
+						allWords[eachMiss].inBlog.push(i);
+					}
+
+				})
+
+
+
+			}
+
+
+
+				
+
+				
+
+				
+
+
+			
+
+
+
+
+			function getMapValue(theValue)
+			{			
+				
+				return allWords[theValue]
+
+
+			}
+
+
+			
+			
+
+
+			function convertArrayOfObjectsToCSV(args) {
+		        var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+		        data = args.data || null;
+		        if (data == null || !data.length) {
+		            return null;
+		        }
+
+		        columnDelimiter = args.columnDelimiter || ',';
+		        lineDelimiter = args.lineDelimiter || '\n';
+
+		        keys = Object.keys(data[0]);
+
+		        result = '';
+		        result += keys.join(columnDelimiter);
+		        result += lineDelimiter;
+
+		        data.forEach(function(item) {
+		            ctr = 0;
+		            keys.forEach(function(key) {
+		                if (ctr > 0) result += columnDelimiter;
+
+		                result += item[key];
+		                ctr++;
+		            });
+		            result += lineDelimiter;
+		        });
+
+		        return result;
+		    }
+
+
+    		function downloadCSV(args) {
+		        var data, filename, link;
+
+		        //console.log(args.filename);
+		       // ConvertMapToArray(allPersons);
+
+		        
+		        ConvertMapToArray(allWords);
+		        
+
+		        
+
+		        var csv = convertArrayOfObjectsToCSV({
+		            data: tempArray
+		        });
+		        if (csv == null) return;
+
+
+
+
+		        filename = args.filename || 'export.csv';
+
+		        // if (!csv.match(/^data:text\/csv/i)) {
+		        //     csv = 'data:text/csv;charset=utf-8,' + csv;
+		        // }
+		        // data = encodeURI(csv);
+
+
+		        csvData = new Blob([csv], { type: 'text/csv' });
+		        var csvUrl = URL.createObjectURL(csvData);
+
+		        link = document.createElement('a');
+		        link.setAttribute('href', csvUrl);
+		        link.setAttribute('download', filename);
+		        link.click();
+    		}
+
+
+
+    		function ConvertMapToArray(data)
+    		{
+    						
+
+    			tempArray.splice(0);
+
+
+    			//console.log(data)
+
+    			Object.keys(data).forEach( function(key){
+
+    				
+
+
+    				tempArray.push(
+
+    				{
+    					"Word": 		data[key].Word ,
+    					"Total":  		data[key].Total,
+    					"inBlogs": 		data[key].inBlog.join("-")  
+    				});
+
+    				
+
+    			})
+
+    				
+
+    			
+
+    		}
+		
+
+			
+
+
+
+
+
+		</script>
+	</body>
+</html>

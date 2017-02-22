@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="d3.layout.cloud.js"></script>
+<script type="text/javascript" src="slider.js"></script>
+<script type="text/javascript" src="range.js"></script>
+<script type="text/javascript" src="timer.js"></script>
+<link type="text/css" rel="StyleSheet" href="winclassic.css" />
+<head>
+    <title>Word Cloud Example</title>
+</head>
+<style>
+    body {
+        font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+    }
+    .legend {
+        border: 1px solid #555555;
+        border-radius: 5px 5px 5px 5px;
+        font-size: 0.8em;
+        margin: 10px;
+        padding: 8px;
+    }
+    .bld {
+        font-weight: bold;
+    }
+</style>
+<body>
+
+</body>
+
+<div style="width: 40%;">
+    <div class="legend">
+        Commonly used words are larger and slightly faded in color.  Less common words are smaller and darker.
+    </div>
+
+</div>
+<div class="slider" id="slider-1" tabIndex="1">
+   <input class="slider-input" id="slider-input-1"
+      name="slider-input-1"/>
+</div>
+ 
+<script>
+
+
+
+/*General Comments
+
+    1. Any element that has an 'id' attribute cannot have a value with a space in it. E.g. someElement.attr("id", "North Dakota")
+        such id's with spaces in them wont get recognized. so to handle this, we are using the String.split(" ").join("_")
+        This will convert 'North Dakota' to 'North_Dakota' 
+
+*/
+    
+
+
+    //initializing the wordList array
+    var wordList =  [],
+                    width = 1200,
+                    height = 500;
+
+    //initializing a scale to scale the frequencies of the words
+    var wordSizeScale = d3.scale.linear()
+                        .range([0,100]);
+     wordSizeScale.domain([0,393]); 
+
+    //initializing variables to set the scale
+    var maxSize;
+    var minSize;
+
+    //initializing allData to hold contents of csv file
+var s = new Slider(document.getElementById("slider-1"),
+                   document.getElementById("slider-input-1"));
+
+    d3.csv("topPersons.csv", function(error,data){
+
+        //Logic to get scale of the words
+
+        allData = data
+
+        // maxSize = d3.max(allData,function(d){
+        //     return d.total
+        // })
+
+        // minSize = d3.min(allData,function(d){
+        //     console.log(d.total)
+        //     return d.total
+        // })
+
+        
+
+        allData.forEach(function(d){
+             //populationg the wordList array,with the text and total values foe each record of the .csv file.
+             wordList.push({"text":d.text, "size":d.total})           
+            
+        });
+
+        d3.layout.cloud().size([1200, 300])
+            .words(wordList.map(function(d){                
+                return {text: d.text, size: d.size}; // the wordlist.map is important else, the code for wordle wont work
+            }))
+            .rotate(0)
+            .fontSize(function(d) { return wordSizeScale(d.size); })
+            .on("end", draw)
+            .start();
+
+
+
+     });	
+
+
+    var color = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"]);
+
+    //   var s = new Slider(document.getElementById("timeline"), document.getElementById("period"));
+    //    s.setMinimum(1);
+    //  s.setMaximum(181);
+   //     s.setValue(50000000000000);
+     //   s.onchange = function () { //document.getElementById("monthtag").innerHTML = eval("mt_" + s.getValue());
+	//		"Nov 2001"	};
+
+	
+	
+	
+
+    function draw(words) {
+    
+		var svg = d3.select("body").append("svg")
+				.attr("width", 1200)
+				.attr("height", 500)		        
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                    .attr("transform", "translate(500,200)")
+
+                   .selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                        .attr("class","wordle")
+                        .attr("id", function(d){return (d.text.split(" ").join("_") + "_wordle");}) // this step is to assign unique id's to each word
+                        .style("font-size", function(d) { return d.size + "px"; })
+                        .style("fill", function(d, i) { return color(i); })
+                        .attr("transform", function(d) {
+                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        })
+                        .text(function(d) { return d.text; })
+                        .on("mouseover", function(d){
+                            var wordID = d3.select(this).attr("id");
+                            d3.selectAll(".wordle").style("opacity",0.2);
+                            d3.select("#" + wordID).style("opacity",1);
+                        })
+                        .on("mouseout", function(d){
+
+                            d3.selectAll(".wordle").style("opacity",1);
+                        })
+						
+    }
+
+
+
+    
+
+
+    
+                        
+
+
+</script>
+
+
+
+</html>

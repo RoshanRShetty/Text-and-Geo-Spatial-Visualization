@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title> Indexer </title>
+		<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"> </script>
+		<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+		<script src="d3.layout.cloud.js"></script>
+		<script src="lunr.min.js"></script>
+		<script src="elasticlunr.js"></script>
+
+		<style>
+		    body {
+		        font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+		    }
+		    .legend {
+		        border: 1px solid #555555;
+		        border-radius: 5px 5px 5px 5px;
+		        font-size: 0.8em;
+		        margin: 10px;
+		        padding: 8px;
+		    }
+		    .bld {
+		        font-weight: bold;
+		    }
+		</style>
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+
+			//initializing a scale to scale the frequencies of the words
+    		var wordSizeScale = d3.scale.linear().range([6,150]);
+     		wordSizeScale.domain([0,2000]);
+
+     		//initializing variable to hold valueof the word selected from the wordle
+    		var wordID;
+
+    		var color = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#ddd", "#ccc", "#bbb", "#aaa", "#999", "#888", "#777", "#666", "#555", "#444", "#333", "#222"]);
+
+
+
+			var allData = [];
+			var parseData = [];
+
+			var personsInBlog = new Map();	
+			var locationsInBlog = new Map();
+			var orgInBlog = new Map();		
+			var misInBlog = new Map();
+			var person =[];
+
+			var allWords = new Map();
+
+
+			var isBlogGoodForIndexing = "NO";
+			
+
+
+			// variables to parse date
+
+			parseDate = d3.time.format("%Y-%m-%d").parse;
+
+			//Creating an Index
+			var index = elasticlunr();
+
+			//setting fields of the index
+			index.addField('words');
+			index.setRef('id');
+
+			//creating blogId's
+			var blogId;
+
+			//initializing allData
+			var allData;
+
+			//initializing allWordsInABlog
+			var allWordsInABlog;
+
+			//initializing isBlogAlready Processed
+			var blogAlreadyIndexed = [];
+
+			var dataInOneBlog = [];
+
+			var words = "";
+
+
+			var searchList = [];
+
+			var searchWord;
+
+			var inBlogs = [];
+
+			var Threshold;
+
+			var result = [];
+
+
+
+			d3.tsv("../Data/huffington.tsv", function(error,data)
+			{
+				if (error) {return error;}
+
+				allData = data
+
+
+			}); // end of d3.tsv
+
+			
+
+
+
+			
+
+
+
+			//Loading the wikinews data file and processing it
+			d3.csv("../Data/allWords - huffington.csv", function(error,data)
+			{
+				allWordData = data
+				if (error) throw error;	
+
+				allWordData.forEach(function(d){
+					word = d.Word;
+					total = d.Total;
+					parseData = d.inBlogs.split("-");
+
+					allWords[word] = {"Word": word, "Total":total, "inBlogs": parseData}					
+				})				
+			}) // end of d3.tsv
+
+
+
+
+			function processSearchTerm(theSearchTerm)
+			{
+				searchWord = theSearchTerm;
+
+				//console.log(allWords[searchWord] + "here")
+
+				if(allWords[searchWord] != undefined)
+				{
+					inBlogs = allWords[searchWord].inBlogs
+					var count = allWords[searchWord].Total
+
+					if (count > 1000)
+					{
+						Threshold = 0.3
+					}
+					else if (count > 800 && count < 1000) {Threshold = 0.4}
+					else if (count > 500 && count < 800) {Threshold = 0.5}
+					else {Threshold = 0.6}
+
+					getAllWordsFromRetrievedBlogs(inBlogs, count)					
+				}
+			}
+
+
+			function getAllWordsFromRetrievedBlogs(inBlogs,count)
+			{
+				
+				
+				inBlogs.forEach(function(d){
+
+					
+					if(blogAlreadyIndexed.indexOf(d) === -1)
+					{
+
+						//console.log(count + "here2")
+
+						var allPersons		= allData[d].person.split("|")
+						var allLoc			= allData[d].location.split("|")
+						var allOrg 			= allData[d].organization.split("|")
+						var allMis			= allData[d].miscellaneous.split("|")
+
+
+						var countPerson = 0;
+						var countLoc = 0;
+						var countOrg = 0;
+						var countMis = 0;
+
+
+						
+						allPersons.forEach(function(d){
+
+
+
+								if (d === searchWord || d === "true" || d === "false" || d === "sept 11" || d === "= hitler" || d === "+ learning" || d === "size"
+									|| d === "keys" || d === "+ bush" || d === "-- nostradamus" || d === "irregular" || d === "nancy pelosi" || d === "larry craig expletive" || d === "hillary vs rudy") 
+								{
+									return;
+								}
+
+								//console.log(d);
+
+								if (allWords[d] === undefined)
+								{
+									return;
+								}
+
+								//console.log(allWords[d])
+
+								try{
+
+									var wordCount = allWords[d].Total;
+
+								}catch (error)
+								{
+									return;
+								}
+
+								
+
+								if(wordCount > (count * Threshold))
+								{
+									countPerson = countPerson + 1;
+
+									if(searchList.indexOf(d) === -1)
+									{
+										searchList.push(d);
+									}
+								}
+						})
+
+						
+
+						
+						allLoc.forEach(function(d){
+
+								if (d === searchWord || d === "true" || d === "false" || d === "sept 11" || d === "= hitler" || d === "+ learning" || d === "size")
+								{
+									return;
+								}
+
+								try{
+									var wordCount = allWords[d].Total;
+								}catch(error)
+								{
+									return;
+								}
+								
+
+								if(wordCount > (count * Threshold))
+								{
+									countLoc = countLoc + 1;
+
+									if(searchList.indexOf(d) === -1)
+									{
+										searchList.push(d);
+									}
+									
+								}
+						})
+
+						
+
+						allOrg.forEach(function(d){
+
+								if (d === searchWord || d === "true" || d === "false" || d=== "sept 11" || d === "= hitler" || d === "+ learning" || d === "size")
+								{
+									return;
+								}
+
+								try{
+									var wordCount = allWords[d].Total;
+								}catch(error)
+								{
+									return;
+								}
+
+								
+
+								if(wordCount > (count * Threshold))
+								{
+									countOrg = countOrg + 1;
+
+									if(searchList.indexOf(d) === -1)
+									{
+										searchList.push(d);
+									}
+								}
+						})
+
+						
+
+						
+						allMis.forEach(function(d){
+
+								if (d === searchWord || d === "true" || d === "false" || d === "sept 11" || d === "= hitler" || d === "+ learning" || d === "size")
+								{
+									return;
+								}
+
+								try{
+									var wordCount = allWords[d].Total;
+								}catch(error)
+								{
+									return;
+								}
+
+								
+
+								if(wordCount > (count * Threshold))
+								{
+									countMis = countMis + 1;
+
+									if(searchList.indexOf(d) === -1)
+									{
+										searchList.push(d);
+									}
+								}
+						})
+
+						
+
+
+						//console.log(countPerson > 0 || countOrg > 0 || countLoc > 0 || countMis > 0 + "here3")
+
+						if(countPerson > 0 || countOrg > 0 || countLoc > 0 || countMis > 0)
+						{
+
+							allWordsInABlog = allPersons.join(",").concat(" ").concat(allLoc.join(","));
+							allWordsInABlog = allWordsInABlog.concat(" ").concat(allOrg.join(","));
+							allWordsInABlog = allWordsInABlog.concat(" ").concat(allMis.join(","));
+
+							allWordsInABlog = allWordsInABlog.split(",");
+
+							allWordsInABlog.forEach(function(d){
+
+								d = d.split(" ").join("__");
+								words = words.concat(d).concat(" ");
+						
+							})
+
+							dataInOneBlog.push(words);
+							words = "";
+						
+							blogAlreadyIndexed.push(d);
+							
+						}
+						
+					}
+				})
+
+				loadDocInIndex(dataInOneBlog);
+
+				searchList.forEach(function(d){
+
+					//console.log(searchWord + " " + d)
+					searchRelationShip(searchWord,d);
+
+
+
+				})
+
+			}
+
+
+
+
+			
+
+			function loadDocInIndex(data)
+			{
+				//console.log(data)
+
+				data.forEach(function(d,i){
+
+
+					var doc = {
+					"id": i,
+					"words": d
+					}
+
+					//console.log(doc);
+
+					index.addDoc(doc);
+
+
+
+				})
+
+					
+			}
+
+
+			
+			function searchRelationShip(firstTerm, secondTerm)
+			{
+				//console.log(firstTerm + " " + secondTerm);
+
+				//processSearchTerm(firstTerm);
+
+				x = index.search(firstTerm.split(" ").join("__") + " " + secondTerm.split(" ").join("__"), {
+
+				
+					fields:{
+					words: {boost: 1, bool: "AND"}					
+					},
+					bool: "AND"
+				
+
+					} )
+
+				//console.log("here")
+				//console.log(x)
+
+				if(x.length > 1){
+					result.push({"Word":secondTerm,"Count":x.length});
+				}
+
+
+				result.sort (function(a,b){
+					if (a.Count > b.Count)
+					{
+						return -1;
+					}
+					else if (a.Count < b.Count)
+					{
+						return 1;
+					}
+					else
+					{
+						return 0;
+					}
+				})
+
+
+				// if (result.length > 50)
+				// {
+				// 	result.splice(50,result.length);
+				// }			
+
+
+			}
+
+
+		</script>
+
+
+
+
+
+	</body>
+</html>
