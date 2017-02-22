@@ -1,0 +1,24 @@
+Huffington Post:
+2007-2014
+
+Wikinews: 
+2004-2015
+
+Featured stories:
+2008 -US President Elections
+Important laws- bills
+Famous Personalities 
+Natural Disasters
+Technology- rise of smart phones- social media 
+Recession
+
+
+Tasks:
+--Data extraction - 50 most common words
+--Relationship between the data - https://code.google.com/archive/p/word2vec/
+				-wordNet library
+	
+Tool  for finding the relationship between words:
+https://code.google.com/archive/p/word2vec/
+	
+--Visualization techniques 

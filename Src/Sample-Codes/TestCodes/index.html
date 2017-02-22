@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="d3.layout.cloud.js"></script>
+<head>
+    <title>Word Cloud Example</title>
+</head>
+<style>
+    body {
+        font-family:"Lucida Grande","Droid Sans",Arial,Helvetica,sans-serif;
+    }
+    .legend {
+        border: 1px solid #555555;
+        border-radius: 5px 5px 5px 5px;
+        font-size: 0.8em;
+        margin: 10px;
+        padding: 8px;
+        width: 20%;
+    }
+    .bld {
+        font-weight: bold;
+    }
+
+    div.tooltip {
+        position: absolute;
+        text-align: center;
+        padding: 5px;
+        font: 12px sans-serif;
+        background: black;
+        color: white;
+        border: 1px;
+        border-radius: 4px;
+        pointer-events: none;
+    }
+
+</style>
+<body>
+<div>
+    <div class="legend">
+        Commonly used words are larger and slightly faded in color.  Less common words are smaller and darker.<br><br>
+        <button onclick="callFile('../Data/allPersons - huffington.csv')">Add Persons</button><br>
+        <button onclick="callFile('../Data/allLocations - huffington.csv')">Add Location</button><br>
+        <button onclick="callFile('../Data/allOrganization - huffington.csv')">Add Organization</button><br>
+        <button onclick="callFile('../Data/allMiss - huffington.csv')">Add Miscellaneous</button>
+    </div>
+</div>
+</body>
+<script>
+
+
+
+/*General Comments
+
+    1. Any element that has an 'id' attribute cannot have a value with a space in it. E.g. someElement.attr("id", "North Dakota")
+        such id's with spaces in them wont get recognized. so to handle this, we are using the String.split(" ").join("_")
+        This will convert 'North Dakota' to 'North_Dakota' 
+
+*/
+
+    var div = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+
+    //initializing the wordList array
+    var wordList =  [],
+                    width = 1600,
+                    height = 800;
+
+
+    var thisArg;
+    //initializing a scale to scale the frequencies of the words
+
+    //initializing variables to set the scale
+    var maxSize;
+    var minSize;
+
+    //var for svg ids
+
+    var svgIDs;
+
+
+    //initializing allData to hold contents of csv file
+    function callFile(passedArg) {
+        thisArg=passedArg;
+        svgIDs = passedArg.replace(".csv","");
+        console.log(svgIDs);
+        wordList.splice(0);
+
+        d3.selectAll(".wordcloud").remove();
+
+        d3.csv(passedArg, function (error, data) {
+
+            //Logic to get scale of the words
+
+            allData = data;
+
+            // maxSize = d3.max(allData,function(d){
+            //     return d.total
+            // })
+
+            // minSize = d3.min(allData,function(d){
+            //     console.log(d.total)
+            //     return d.total
+            // })
+
+
+            var wordSizeScale = d3.scale.linear()
+                    .domain([0, d3.max(data, function(d) {
+                        return d.total;
+                    })])
+                    .range([15,100]);
+
+            for(var i=0;i<50;i++){
+                wordList.push({"text": allData[i].text, "size": allData[i].total, "freq": allData[i].total});
+            }
+
+
+            d3.layout.cloud().size([800, 300])
+                    .words(wordList.map(function (d) {
+                        return {text: d.text, size: d.size, freq: d.freq}; // the wordlist.map is important else, the code for wordle wont work
+                    }))
+                    .rotate(0)
+                    .fontSize(function (d) {return wordSizeScale(d.size)/8; })
+                    .on("end", draw)
+                    .start();
+
+
+        });
+    }
+
+
+
+    var color1 = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#e5ecf6","#ccdaee","#b2c7e5","#99b5dd","#7fa3d5","#6690cc","#4c7ec4","#326bbb","#1959b3","#0047ab"]);
+    var color2 = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#e7f5ee","#cfebdd","#b7e1cc","#9fd7bc","#87ceab","#6fc49","#57ba8a","#3eb079","#26a668","#0f9d58"]);
+    var color3 = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#f7e9e5","#f0d3cc","#e9bdb2","#e2a899","#db9280","#d47c66","#cd674d","#c65133","#bf3b1a","#b82601"]);
+    var color4 = d3.scale.linear()
+            .domain([0,1,2,3,4,5,6,10,15,20,100])
+            .range(["#fee7f2","#fdd0e6","#fcb9da","#fca2cd","#fb8bc1","#fa74b5","#fa5da8","#f9469c","#f82f90","#f81884"]);
+
+
+    function draw(words) {
+
+        d3.select("body")
+                .append("svg")
+                .attr("id", svgIDs)
+                    .attr("width", 900)
+                    .attr("height", 400)
+                     .attr("class", "wordcloud")
+                .append("g")    
+                // without the transform, words words would get cutoff to the left and top, they would
+                // appear outside of the SVG area
+                    .attr("transform", "translate(320,200)")
+                    .selectAll("text")
+                    .data(words)
+                    .enter()
+                    .append("text")
+                        .attr("class","wordle")
+                        .attr("id", function(d){ return (d.text.split(" ").join("_") + "_wordle");}) // this step is to assign unique id's to each word
+                        .style("font-size", function(d) { return d.size + "px"; })
+                        .style("fill", function(d, i) {
+                            if (svgIDs == 'allPersons') {
+                                return color1(i);
+                            }
+                            else if (svgIDs == 'allLocations') {
+                                return color2(i);
+                            }
+                            else if (svgIDs == 'allOrganization') {
+                                return color3(i);
+                            }
+                            else if (svgIDs == 'allMiss') {
+                                return color4(i);
+                            }
+                            else {
+                                console.log("fill fail");
+                                return color1(i);
+                            }
+                        })
+                        .attr("transform", function(d) {
+                            return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
+                        })
+                        .text(function(d) { return d.text; })
+                        .on("mouseover", function(d){
+                            div.transition()
+                                    .style("opacity", 1);
+                            div.html("<u><b><span>" + d.text + "</span></b></u><br>" +
+                                    "frequency: <span>" + d.freq + "</span>")
+                                    .style("left", (d3.event.pageX+30) + "px")
+                                    .style("top", (d3.event.pageY - 28) + "px");
+                            var wordID = d3.select(this).attr("id");
+                            d3.selectAll(".wordle").style("opacity",0.1);
+                            d3.select("#" + wordID).style("opacity",1);
+                        })
+                        .on("mouseout", function(d) {
+                            div.transition()
+                                    .style("opacity", 0);
+                            d3.selectAll(".wordle").style("opacity",1);
+                        })
+    }
+
+</script>
+
+</html>

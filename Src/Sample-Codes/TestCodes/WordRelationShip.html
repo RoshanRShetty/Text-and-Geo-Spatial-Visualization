@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title> Word Frequency Counter </title>
+		<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"> </script>
+		<script src="https://d3js.org/d3-dsv.v1.min.js"></script>
+	</head>
+	<body>
+
+		<script type="text/javascript">
+
+			var allData;
+			var allWordData;
+			var parseData = [];
+			var word;
+			var allWords = new Map();
+			var wordRelationship = new Map();
+			var inBlogs = [];
+			var parseInBlogs = [];
+			var wordList = [];
+			var wordAlreadyCounted = [];
+			var blogAlreadyCounted = [];
+			var wordAlreadyProcessed = [];
+			var top50Words = new Map;
+			var searchList = [];
+
+
+			var searchTerm = "trump"
+			d3.tsv("../Data/huffington.tsv", function(error,data)
+			{
+				allData = data;
+
+			})
+
+
+
+			//Loading the wikinews data file and processing it
+			d3.csv("../Data/allWords - huffington.csv", function(error,data)
+			{
+				allWordData = data
+				if (error) throw error;	
+
+				allWordData.forEach(function(d){
+					word = d.Word;
+					total = d.Total;
+					parseData = d.inBlogs.split("-");
+
+					allWords[word] = {"Word": word, "Total":total, "inBlogs": parseData}					
+				})
+
+				setTimeout(function(){
+					processSearchTerm(searchTerm)
+				},100);
+
+			}) // end of d3.tsv
+
+			function processSearchTerm(theSearchTerm)
+			{				
+				if(allWords[theSearchTerm] != undefined)
+				{
+					inBlogs = allWords[theSearchTerm].inBlogs
+					getAllWordsFromRetrievedBlogs(inBlogs)					
+				}
+			}
+
+			function getAllWordsFromRetrievedBlogs(inBlogs)
+			{
+				parseData.splice(0);
+				
+				inBlogs.forEach(function(d){
+
+					//console.log(allData[d].person);
+
+					parsePerson = allData[d].person.replace("\"","").split("|")
+					parseLocation = allData[d].location.replace("\"","").split("|")
+					parseOrganization = allData[d].organization.replace("\"","").split("|")
+					parseMiss = allData[d].miscellaneous.replace("\"","").split("|")
+
+
+					parsePerson.forEach(function(d)
+					{
+						if (wordAlreadyProcessed.indexOf(d) == -1)
+						{
+							//console.log( "person" + d);
+							wordAlreadyProcessed.push(d);
+							sorter(d);
+													
+						}
+
+					})
+
+					parseLocation.forEach(function (d)
+					{
+						if (wordAlreadyProcessed.indexOf(d) == -1)
+						{
+							//console.log("location" + d);
+							wordAlreadyProcessed.push(d);
+							sorter(d);							
+						}
+						
+					})
+
+					parseOrganization.forEach(function (d)
+					{
+						if (wordAlreadyProcessed.indexOf(d) == -1)
+						{
+							//console.log("org" + d);
+							wordAlreadyProcessed.push(d);
+							sorter(d);							
+						}
+						
+					})
+
+					parseMiss.forEach(function (d)
+					{
+						if (wordAlreadyProcessed.indexOf(d) == -1)
+						{;
+							//console.log("miss" + d);
+							wordAlreadyProcessed.push(d);
+							sorter(d);							
+						}
+						
+					})
+
+
+
+
+
+					wordRelationship.forEach(function(d){
+
+						d3.select("body").append("p").text(d.Word + ": " + d.Count)
+
+					})
+
+
+					//console.log(parsePerson);
+
+					//processEachWordForFrequency(parsePerson);
+					//processEachWordForFrequency(parseLocation);
+					//processEachWordForFrequency(parseOrganization);
+					//processEachWordForFrequency(parseMiss);
+
+
+
+					// },500); 
+
+					
+
+				})
+			}
+
+
+			function sorter(theWord)
+			{
+				//console.log(theWord)
+
+				if (theWord === "true" || theWord === "false" || theWord === "sept 11" || theWord === "= hitler" || theWord === "+ learning" || theWord === "size")
+				{
+					return;
+				}
+
+				var searchVariableCount = allWords[searchTerm].Total
+				var wordCount 			= allWords[theWord].Total
+				//console.log("here " + searchVariableCount * 0.2 );
+
+				if (wordCount > (searchVariableCount * 0.5))
+				{
+					//console.log(theWord + " " + searchVariableCount + " " + wordCount )
+					searchList.push(theWord)
+
+				}
+
+				getFrequency();
+
+
+
+			}
+
+
+			function getFrequency()
+			{
+				searchList.forEach(function(d){
+
+
+					processEachWordForFrequency(d);
+
+
+
+				})
+			} // end of getfrequency()
+
+			function processEachWordForFrequency(theWord)
+			{
+
+
+				//console.log(theWord + " " + searchTerm)
+
+				if ( theWord === searchTerm)
+				{
+					//console.log("here");
+					
+				}
+				else if (wordRelationship[theWord] === undefined)
+				{
+					//console.log("here23")	
+					wordRelationship[theWord] = {"Word":theWord, "Count": 0}
+
+						
+					//setTimeout(function(){
+						searchWordInOtherBlogs(theWord)
+					//},500);
+						
+
+				}
+				// else if (wordRelationship[theWord] != undefined)
+				// {
+						
+				// 	//setTimeout(function(){
+				// 		searchWordInOtherBlogs(theWord)
+				// 	//},500);
+				// }
+
+
+					
+
+
+				
+
+
+			}
+
+
+			function searchWordInOtherBlogs(theWord)
+			{
+				
+				
+				//console.log(theWord);
+
+				if (theWord === searchTerm)
+				{
+					return;
+				}
+
+				wordList = allWords[theWord].inBlogs;
+				wordRelationship[theWord].Count = 0;
+
+				if(wordList.length < inBlogs.length)
+				{
+
+					wordList.forEach(function(d){
+
+						if ( inBlogs.indexOf(d) != -1 )
+						{
+							
+							if (wordAlreadyCounted.indexOf(theWord + "," + d) == -1)
+							{
+								wordRelationship[theWord].Count = wordRelationship[theWord].Count + 1
+
+								//console.log(theWord + "," + d + "   =" + wordRelationship[theWord].Count )
+								
+								wordAlreadyCounted.push(theWord + "," + d)
+							}
+													
+						}
+					})
+
+
+						
+				}
+				else
+				{
+					inBlogs.forEach(function(d){
+
+						if ( wordList.indexOf(d) != -1 )
+						{
+							
+							if (wordAlreadyCounted.indexOf(theWord + "," + d) == -1)
+							{
+								wordRelationship[theWord].Count = wordRelationship[theWord].Count + 1
+
+								//console.log(theWord + "," + d + "   =" + wordRelationship[theWord].Count )
+								
+								wordAlreadyCounted.push(theWord + "," + d)
+							}
+													
+						}
+					})
+
+				}
+
+				
+
+				wordAlreadyCounted.splice(0);
+
+				
+
+				
+			}
+
+
+			
+
+
+
+		</script>
+
+
+
+
+
+	</body>
+</html>
